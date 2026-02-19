@@ -21,6 +21,7 @@ set -euo pipefail
 #   - Writes JSON report per block to out/<block_hash>.json
 #   - Exits 0 on success, 1 on error
 ###############################################################################
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 error_json() {
   local code="$1"
@@ -47,10 +48,11 @@ if [[ "${1:-}" == "--block" ]]; then
       echo "Error: File not found: $f" >&2
       exit 1
     fi
+      exec npx tsx "$REPO_DIR/src/cli.ts" --block "$BLK_FILE" "$REV_FILE" "$XOR_FILE"
   done
 
   # Create output directory
-  mkdir -p out
+  mkdir -p "$REPO_DIR/out"
 
   # TODO: Implement block parsing
   #   1. Read and XOR-decode blk*.dat and rev*.dat using xor.dat key
@@ -81,8 +83,10 @@ if [[ ! -f "$FIXTURE" ]]; then
   exit 1
 fi
 
+exec npx tsx "$REPO_DIR/src/cli.ts" "$FIXTURE"
+
 # Create output directory
-mkdir -p out
+mkdir -p "$REPO_DIR/out"
 
 # TODO: Implement transaction parsing
 #   1. Read fixture JSON (network, raw_tx, prevouts)

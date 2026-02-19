@@ -14,13 +14,16 @@ set -euo pipefail
 #
 # TODO: Replace the stub below with your web server start command.
 ###############################################################################
-
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 PORT="${PORT:-3000}"
+
 
 # TODO: Start your web server here, for example:
 #   exec node server.js
 #   exec python -m http.server "$PORT"
 #   exec cargo run --release -- --port "$PORT"
+echo "http://127.0.0.1:${PORT}"
+exec npx tsx "$REPO_DIR/src/server.ts"
 
 echo "Error: Web visualizer is not yet implemented" >&2
 echo "Set up your web server to listen on port $PORT" >&2
