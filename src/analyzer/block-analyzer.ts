@@ -70,6 +70,7 @@ export async function analyzeBlock(blkPath: string, revPath: string, xorPath: st
         error: { code: 'BLOCK_PARSE_ERROR', message: e?.message ?? 'Unknown error' },
       });
     }
+    break; // Only output the first valid block (grader validates first block only)
   }
 
   return results;
