@@ -51,7 +51,6 @@ export function analyzeTx(fixture: FixtureInput): TxAnalysisResult | ErrorResult
 
     // ── Size / Weight ──────────────────────────────────────────────────────
     const sizeBytes: number = parsed.sizeBytes;
-    const baseSize: number = parsed.baseSize;
     const witnessSize: number = parsed.witnessSize;
     const weight: number = parsed.weight;
     const vbytes: number = parsed.vbytes;

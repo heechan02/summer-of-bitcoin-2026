@@ -102,7 +102,7 @@ export function parseTxBuffer(raw: Buffer): ParsedTx {
     witnessSize,
     weight,
     vbytes,
-  } as ParsedTx & { txid: string; wtxid: string | null };
+  } as unknown as ParsedTx & { txid: string; wtxid: string | null };
 
   (result as any).txid = txid;
   (result as any).wtxid = wtxid;

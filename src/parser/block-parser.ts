@@ -1,6 +1,5 @@
 import { BufferReader } from '../lib/reader.js';
 import { hash256 } from '../lib/hash.js';
-import { parseTxBuffer } from './tx-parser.js';
 import type { ParsedTx } from '../analyzer/types.js';
 
 const MAINNET_MAGIC = 0xd9b4bef9;
@@ -89,8 +88,6 @@ export function parseBlocks(data: Buffer): ParsedBlock[] {
     const transactions: ParsedTx[] = [];
 
     for (let i = 0; i < txCount; i++) {
-      const txStart = blockReader.position;
-      // We need to determine tx length by parsing it
       const tx = parseTxFromReader(blockReader);
       transactions.push(tx);
     }
@@ -214,10 +211,10 @@ export function computeMerkleRoot(txids: string[]): string {
   if (txids.length === 0) return '0'.repeat(64);
 
   // Convert display txids to raw bytes (need to re-reverse for hashing)
-  let hashes = txids.map(txid => Buffer.from(txid, 'hex').reverse());
+  let hashes: Buffer<ArrayBufferLike>[] = txids.map(txid => Buffer.from(txid, 'hex').reverse());
 
   while (hashes.length > 1) {
-    const next: Buffer[] = [];
+    const next: Buffer<ArrayBufferLike>[] = [];
     for (let i = 0; i < hashes.length; i += 2) {
       const a = hashes[i];
       const b = i + 1 < hashes.length ? hashes[i + 1] : hashes[i];

@@ -51,7 +51,7 @@ function parseUndoBlock(reader: BufferReader): UndoBlock {
     for (let i = 0; i < inputCount; i++) {
       // Coin data uses Bitcoin Core self-terminating VARINT throughout.
       // Format: coinMeta (VI) + 1 flag byte + compressedAmount (VI) + nSize (VI) + script bytes
-      const _coinMeta = reader.readBitcoinCoreVarInt(); // height*2 + isCoinBase
+      reader.readBitcoinCoreVarInt(); // coinMeta: height*2 + isCoinBase (not needed for prevout values)
       reader.skip(1); // extra flag byte present in serialized undo data
       const compressedAmount = reader.readBitcoinCoreVarInt();
       const valueSats = decompressAmount(compressedAmount);
