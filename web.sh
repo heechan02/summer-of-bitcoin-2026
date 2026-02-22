@@ -23,8 +23,4 @@ PORT="${PORT:-3000}"
 #   exec python -m http.server "$PORT"
 #   exec cargo run --release -- --port "$PORT"
 echo "http://127.0.0.1:${PORT}"
-exec npx tsx "$REPO_DIR/src/server.ts"
-
-echo "Error: Web visualizer is not yet implemented" >&2
-echo "Set up your web server to listen on port $PORT" >&2
-exit 1
+exec node -r "$REPO_DIR/node_modules/tsx/dist/cjs/index.cjs" "$REPO_DIR/src/server.ts"
