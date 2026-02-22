@@ -11,6 +11,11 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# Auto-install dependencies if node_modules is missing (e.g. fresh CI clone)
+if [[ ! -d "$REPO_DIR/node_modules" ]]; then
+  npm install --prefix "$REPO_DIR" --silent 2>/dev/null
+fi
+
 error_json() {
   local code="$1"
   local message="$2"

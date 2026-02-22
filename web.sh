@@ -17,6 +17,11 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 PORT="${PORT:-3000}"
 
+# Auto-install dependencies if node_modules is missing (e.g. fresh CI clone)
+if [[ ! -d "$REPO_DIR/node_modules" ]]; then
+  npm install --prefix "$REPO_DIR" --silent 2>/dev/null
+fi
+
 
 # TODO: Start your web server here, for example:
 #   exec node server.js
