@@ -37,6 +37,7 @@
             <option value="basic_change_p2wpkh">Basic Change (p2wpkh)</option>
             <option value="send_all_dust_change">Send-All (Dust Change)</option>
             <option value="rbf_basic">RBF Signaling</option>
+            <option value="rbf_with_locktime">RBF with Locktime ⭐</option>
             <option value="locktime_block_height">Locktime (Block Height)</option>
             <option value="anti_fee_sniping">Anti-Fee-Sniping</option>
             <option value="mixed_input_types">Mixed Script Types</option>
@@ -125,6 +126,26 @@
             <h3>🎯 Selection Strategy</h3>
             <div class="technique-status"></div>
           </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- PRIVACY METER -->
+      <!-- ========================================== -->
+      <section class="privacy-section">
+        <h2>🔒 Privacy Analysis</h2>
+        <div class="privacy-container">
+          <div class="privacy-meter">
+            <div class="privacy-score-display">
+              <span class="score-value" id="privacyScore">--</span>
+              <span class="score-label">/100</span>
+            </div>
+            <div class="privacy-bar">
+              <div class="privacy-bar-fill" id="privacyBarFill"></div>
+            </div>
+            <div class="privacy-rating" id="privacyRating">Calculating...</div>
+          </div>
+          <div id="privacyRisksList" class="privacy-risks-list"></div>
         </div>
       </section>
 

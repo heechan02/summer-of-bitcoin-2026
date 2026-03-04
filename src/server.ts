@@ -26,6 +26,7 @@ import { computeLocktime, computeSequence, classifyLocktime } from "./sequences.
 import { buildPsbt } from "./psbt.js";
 import type { OutputSpec } from "./psbt.js";
 import { computeWarnings } from "./warnings.js";
+import { analyzePrivacy } from "./privacy.js";
 import { buildReport, buildErrorReport } from "./reporter.js";
 import type { ReportParams, ReportOutput } from "./reporter.js";
 
@@ -196,7 +197,17 @@ app.post("/api/build", async (req: Request, res: Response) => {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // STEP 10: Build report
+    // STEP 10: Analyze privacy
+    // ──────────────────────────────────────────────────────────────────────────
+
+    const privacyAnalysis = analyzePrivacy(selected, reportOutputs, changeIndex);
+
+    console.error(
+      `Privacy Score: ${privacyAnalysis.score}/100 (${privacyAnalysis.risks.length} risks)`,
+    );
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // STEP 11: Build report
     // ──────────────────────────────────────────────────────────────────────────
 
     const reportParams: ReportParams = {
@@ -212,12 +223,14 @@ app.post("/api/build", async (req: Request, res: Response) => {
       locktimeType,
       psbtBase64,
       warnings,
+      privacyScore: privacyAnalysis.score,
+      privacyRisks: privacyAnalysis.risks,
     };
 
     const report = buildReport(reportParams);
 
     // ──────────────────────────────────────────────────────────────────────────
-    // STEP 11: Return response
+    // STEP 12: Return response
     // ──────────────────────────────────────────────────────────────────────────
 
     res.status(200).json(report);

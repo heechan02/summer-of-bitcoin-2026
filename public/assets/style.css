@@ -706,3 +706,153 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================================
+   PRIVACY SECTION
+   ============================================================================ */
+
+.privacy-section {
+  background: var(--stone-dark);
+  border: 2px solid var(--metal-bronze);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.privacy-section h2 {
+  color: var(--parchment);
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+  text-align: center;
+}
+
+.privacy-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.privacy-meter {
+  background: var(--stone-light);
+  border: 2px solid var(--metal-iron);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.privacy-score-display {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.score-value {
+  color: var(--metal-gold);
+}
+
+.score-label {
+  font-size: 1.5rem;
+  color: var(--text-light);
+}
+
+.privacy-bar {
+  height: 24px;
+  background: var(--stone-dark);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1rem 0;
+  border: 1px solid var(--metal-iron);
+}
+
+.privacy-bar-fill {
+  height: 100%;
+  background: var(--success-green);
+  transition: width 0.5s ease, background-color 0.5s ease;
+  border-radius: 12px;
+}
+
+.privacy-rating {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.privacy-risks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.no-risks {
+  background: var(--stone-light);
+  border: 2px solid var(--success-green);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--success-green);
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.privacy-risk-card {
+  background: var(--stone-light);
+  border-radius: 8px;
+  padding: 1rem;
+  border-left: 4px solid var(--metal-iron);
+}
+
+.privacy-risk-card.severity-high {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.privacy-risk-card.severity-medium {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.privacy-risk-card.severity-low {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.risk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.risk-icon {
+  font-size: 1.25rem;
+}
+
+.risk-code {
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--parchment);
+  flex: 1;
+}
+
+.risk-severity {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  background: var(--stone-dark);
+}
+
+.risk-description {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-left: 2rem;
+}
+
+/* Responsive privacy section */
+@media (max-width: 768px) {
+  .privacy-container {
+    grid-template-columns: 1fr;
+  }
+}

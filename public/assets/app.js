@@ -13,6 +13,7 @@ const SAMPLE_FIXTURES = {
   'basic_change_p2wpkh': 'fixtures/basic_change_p2wpkh.json',
   'send_all_dust_change': 'fixtures/send_all_dust_change.json',
   'rbf_basic': 'fixtures/rbf_basic.json',
+  'rbf_with_locktime': 'fixtures/rbf_with_locktime.json',
   'locktime_block_height': 'fixtures/locktime_block_height.json',
   'anti_fee_sniping': 'fixtures/anti_fee_sniping.json',
   'mixed_input_types': 'fixtures/mixed_input_types.json',
@@ -96,6 +97,7 @@ function renderTransaction(report) {
   renderBalance(report);
   renderFeeInfo(report);
   renderTechniques(report);
+  renderPrivacy(report.privacy_score, report.privacy_risks);
   renderWarnings(report.warnings);
   renderPSBT(report.psbt_base64);
 }
@@ -254,6 +256,73 @@ function renderTechniques(report) {
       Selected ${report.selected_inputs.length} input(s).
     </p>
   `;
+}
+
+/**
+ * Render privacy meter and risks
+ */
+function renderPrivacy(score, risks) {
+  // Update score display
+  document.getElementById('privacyScore').textContent = score;
+
+  // Update progress bar
+  const bar = document.getElementById('privacyBarFill');
+  bar.style.width = `${score}%`;
+
+  // Set color based on score
+  if (score >= 80) {
+    bar.style.backgroundColor = '#10b981'; // green
+  } else if (score >= 60) {
+    bar.style.backgroundColor = '#f59e0b'; // yellow
+  } else if (score >= 40) {
+    bar.style.backgroundColor = '#f97316'; // orange
+  } else {
+    bar.style.backgroundColor = '#ef4444'; // red
+  }
+
+  // Update rating text
+  const rating = document.getElementById('privacyRating');
+  if (score >= 80) {
+    rating.textContent = '✅ Good Privacy';
+    rating.style.color = '#10b981';
+  } else if (score >= 60) {
+    rating.textContent = '⚠️ Moderate Privacy';
+    rating.style.color = '#f59e0b';
+  } else if (score >= 40) {
+    rating.textContent = '⚠️ Weak Privacy';
+    rating.style.color = '#f97316';
+  } else {
+    rating.textContent = '❌ Poor Privacy';
+    rating.style.color = '#ef4444';
+  }
+
+  // Render risks
+  const risksList = document.getElementById('privacyRisksList');
+
+  if (risks.length === 0) {
+    risksList.innerHTML = '<div class="no-risks">✅ No privacy risks detected</div>';
+    return;
+  }
+
+  const riskIcons = {
+    high: '🔴',
+    medium: '🟡',
+    low: '🟢',
+  };
+
+  risksList.innerHTML = risks.map(risk => {
+    const icon = riskIcons[risk.severity] || '⚪';
+    return `
+      <div class="privacy-risk-card severity-${risk.severity}">
+        <div class="risk-header">
+          <span class="risk-icon">${icon}</span>
+          <span class="risk-code">${risk.code.replace(/_/g, ' ')}</span>
+          <span class="risk-severity">${risk.severity.toUpperCase()}</span>
+        </div>
+        <p class="risk-description">${risk.description}</p>
+      </div>
+    `;
+  }).join('');
 }
 
 /**

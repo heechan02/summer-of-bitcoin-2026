@@ -35,6 +35,8 @@ import type { OutputSpec } from "./psbt.js";
 
 import { computeWarnings } from "./warnings.js";
 
+import { analyzePrivacy } from "./privacy.js";
+
 import {
   buildReport,
   buildErrorReport,
@@ -218,7 +220,21 @@ export async function buildTransaction(
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // STEP 8: Build report and write to file
+    // STEP 8: Analyze privacy
+    // ──────────────────────────────────────────────────────────────────────────
+
+    const privacyAnalysis = analyzePrivacy(
+      selectionResult.selected,
+      reportOutputs,
+      changeIndex,
+    );
+
+    console.error(
+      `Privacy Score: ${privacyAnalysis.score}/100 (${privacyAnalysis.risks.length} risks detected)`,
+    );
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // STEP 9: Build report and write to file
     // ──────────────────────────────────────────────────────────────────────────
 
     const reportParams: ReportParams = {
@@ -234,6 +250,8 @@ export async function buildTransaction(
       locktimeType,
       psbtBase64,
       warnings,
+      privacyScore: privacyAnalysis.score,
+      privacyRisks: privacyAnalysis.risks,
     };
 
     const report = buildReport(reportParams);

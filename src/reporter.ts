@@ -20,6 +20,7 @@
 
 import type { Network, Utxo, ScriptType } from "./parser.js";
 import type { Warning } from "./warnings.js";
+import type { PrivacyRisk } from "./privacy.js";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -77,6 +78,10 @@ export interface ReportParams {
 
   // Warnings
   warnings: Warning[];
+
+  // Privacy analysis
+  privacyScore: number;
+  privacyRisks: PrivacyRisk[];
 }
 
 /**
@@ -97,6 +102,8 @@ export interface Report {
   locktime_type: "none" | "block_height" | "unix_timestamp";
   psbt_base64: string;
   warnings: Warning[];
+  privacy_score: number;
+  privacy_risks: PrivacyRisk[];
 }
 
 /**
@@ -153,6 +160,8 @@ export function buildReport(params: ReportParams): Report {
     locktime_type: params.locktimeType,
     psbt_base64: params.psbtBase64,
     warnings: params.warnings,
+    privacy_score: params.privacyScore,
+    privacy_risks: params.privacyRisks,
   };
 }
 
