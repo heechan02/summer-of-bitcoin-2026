@@ -129,18 +129,12 @@ export function resolveFeeAndChange(
     };
   }
 
-  // Check for impossible case (should not happen with correct selector)
-  if (changeAmount < 0) {
-    // This means selector didn't provide enough inputs
-    const error = new Error(
-      `Insufficient funds: inputs (${totalInputSats}) - payments (${totalPaymentSats}) - fee (${feeWithChange}) = ${changeAmount}`,
-    ) as Error & { code: string };
-    error.code = "INSUFFICIENT_FUNDS";
-    throw error;
-  }
-
-  // If we reach here: 0 <= changeAmount < 546 (dust territory)
-  // Must go to Pass 2 and drop the change output
+  // If we reach here: changeAmount < 546 (dust or negative)
+  // This includes both:
+  // - Dust case: 0 <= changeAmount < 546
+  // - Negative case: changeAmount < 0 (can't afford fee WITH change)
+  // In both cases, we must try Pass 2 (send-all) because removing the
+  // change output makes the transaction smaller (cheaper fee)
 
   // -------------------------------------------------------------------------
   // STEP 3: Pass 2 — Drop change output (send-all)

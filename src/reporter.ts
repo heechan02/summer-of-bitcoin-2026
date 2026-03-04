@@ -42,6 +42,7 @@ export interface ReportOutput {
   value_sats: number;
   script_pubkey_hex: string;
   script_type: ScriptType;
+  is_change: boolean;
 }
 
 /**

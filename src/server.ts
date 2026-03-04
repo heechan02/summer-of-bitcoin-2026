@@ -183,6 +183,7 @@ app.post("/api/build", async (req: Request, res: Response) => {
       value_sats: p.value_sats,
       script_pubkey_hex: p.script_pubkey_hex,
       script_type: p.script_type,
+      is_change: false,
     }));
 
     if (changeAmount !== null) {
@@ -190,6 +191,7 @@ app.post("/api/build", async (req: Request, res: Response) => {
         value_sats: changeAmount,
         script_pubkey_hex: change.script_pubkey_hex,
         script_type: change.script_type,
+        is_change: true,
       });
     }
 

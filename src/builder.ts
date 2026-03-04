@@ -172,6 +172,7 @@ export async function buildTransaction(
       value_sats: payment.value_sats,
       script_pubkey_hex: payment.script_pubkey_hex,
       script_type: payment.script_type,
+      is_change: false,
     }));
 
     // Add change output to report if present
@@ -182,6 +183,7 @@ export async function buildTransaction(
         value_sats: feeChangeResult.changeAmount,
         script_pubkey_hex: change.script_pubkey_hex,
         script_type: change.script_type,
+        is_change: true,
       });
     }
 

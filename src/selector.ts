@@ -238,16 +238,28 @@ function tryGreedy(
     selected.push(utxo);
     currentSum += utxo.value_sats;
 
-    // Estimate fee WITH change output
+    // Estimate fee WITH change output (optimistic case)
     const inputTypes = selected.map((u) => u.script_type);
-    const outputTypes = [...paymentTypes, changeType]; // payments + change
-    const vbytes = estimateVbytes(inputTypes, outputTypes);
-    const estimatedFee = Math.ceil(vbytes * feeRateSatVb);
-    const needed = targetSats + estimatedFee;
+    const outputTypesWithChange = [...paymentTypes, changeType]; // payments + change
+    const vbytesWithChange = estimateVbytes(inputTypes, outputTypesWithChange);
+    const feeWithChange = Math.ceil(vbytesWithChange * feeRateSatVb);
+    const neededWithChange = targetSats + feeWithChange;
 
-    // Check if we have enough
-    if (currentSum >= needed) {
+    // Check if we have enough for the with-change case
+    if (currentSum >= neededWithChange) {
       return selected; // Success!
+    }
+
+    // Also check if send-all (no change) would work
+    // This handles edge cases where change would be dust/negative
+    const outputTypesNoChange = paymentTypes; // payments only
+    const vbytesNoChange = estimateVbytes(inputTypes, outputTypesNoChange);
+    const feeNoChange = Math.ceil(vbytesNoChange * feeRateSatVb);
+    const neededNoChange = targetSats + feeNoChange;
+
+    // If send-all works, we have enough (feeChange module will determine final strategy)
+    if (currentSum >= neededNoChange) {
+      return selected; // Success via send-all!
     }
   }
 
