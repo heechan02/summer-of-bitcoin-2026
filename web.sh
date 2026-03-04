@@ -17,11 +17,14 @@ set -euo pipefail
 
 PORT="${PORT:-3000}"
 
-# TODO: Start your web server here, for example:
-#   exec node server.js
-#   exec python -m http.server "$PORT"
-#   exec cargo run --release -- --port "$PORT"
+# Export PORT for the server to read
+export PORT
 
-echo "Error: Web visualizer is not yet implemented" >&2
-echo "Set up your web server to listen on port $PORT" >&2
-exit 1
+# Start the server using ts-node (development) or node (production)
+if [ -f "dist/server.js" ]; then
+  # Production: use compiled JavaScript
+  exec node dist/server.js
+else
+  # Development: use ts-node
+  exec npx ts-node src/server.ts
+fi
