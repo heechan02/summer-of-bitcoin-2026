@@ -3,3 +3,5 @@ node_modules/
 __pycache__/
 target/
 .env
+PLAN.md
+CLAUDE.md

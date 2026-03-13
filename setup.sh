@@ -17,4 +17,7 @@ for gz in fixtures/*.dat.gz; do
   fi
 done
 
+# Install dependencies
+npm install
+
 echo "Setup complete"
