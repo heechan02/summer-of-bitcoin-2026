@@ -118,11 +118,11 @@ export function classifyTx(
   if (results.self_transfer.detected) {
     return "self_transfer";
   }
-  if (tx.outputs.length >= BATCH_PAYMENT_MIN_OUTPUTS) {
-    return "batch_payment";
-  }
   if (tx.isCoinbase) {
     return "unknown";
+  }
+  if (tx.outputs.length >= BATCH_PAYMENT_MIN_OUTPUTS) {
+    return "batch_payment";
   }
   return "simple_payment";
 }
