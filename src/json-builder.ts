@@ -89,6 +89,7 @@ export interface TxJsonEntry {
   txid: string;
   input_count: number;
   output_count: number;
+  fee_rate: number | null;
   heuristics: TxHeuristicResults;
   classification: TxClassification;
 }
@@ -217,6 +218,7 @@ function buildBlockEntry(
       txid: r.tx.txid,
       input_count: r.tx.inputs.length,
       output_count: r.tx.outputs.length,
+      fee_rate: r.tx.fee_rate_sat_vb ?? null,
       heuristics: r.heuristics, // invariant 9: all 9 keys present
       classification: r.classification, // invariant 10: valid enum
     }));
