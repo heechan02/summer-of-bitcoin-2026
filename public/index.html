@@ -2089,20 +2089,22 @@
         renderFeeChart(summary.fee_rate_stats || {});
       }
 
-      // Re-render all SVG charts on container resize for full responsiveness
+      // Re-render SVG charts only when window width actually changes (not layout shifts)
+      let _lastRenderWidth = 0;
       let _resizeTimer = null;
-      const _resizeObserver = new ResizeObserver(() => {
+      window.addEventListener("resize", () => {
         clearTimeout(_resizeTimer);
         _resizeTimer = setTimeout(() => {
+          const w = window.innerWidth;
+          if (Math.abs(w - _lastRenderWidth) < 5) return;
+          _lastRenderWidth = w;
           if (!currentData) return;
           const summary = currentData.analysis_summary || {};
           renderScriptChart(summary.script_type_distribution || {});
           renderFeeChart(summary.fee_rate_stats || {});
           renderPipeline(currentData.blocks || []);
-        }, 80);
+        }, 100);
       });
-      _resizeObserver.observe(document.getElementById("charts-row"));
-      _resizeObserver.observe(document.getElementById("pipeline-wrap"));
 
       function renderScriptChart(scriptDist) {
         const svg = document.getElementById("script-chart");
