@@ -351,8 +351,7 @@
         top: 16px;
         right: 16px;
         font-size: 24px;
-        opacity: 1;
-        filter: drop-shadow(0 0 4px rgba(0,0,0,0.8));
+        opacity: 0.8;
       }
 
       /* ── Pipeline SVG container ────────────────────────────────── */
@@ -1587,7 +1586,7 @@
             if (p.y > canvas.height + margin) p.y = -margin;
             ctx.save();
             ctx.globalAlpha = p.opacity;
-            ctx.fillStyle = "#00ff88";
+            ctx.fillStyle = p.char === "₿" ? "#f7931a" : "#00ff88";
             ctx.font = `${p.size}px 'Courier New', monospace`;
             ctx.fillText(p.char, p.x, p.y);
             ctx.restore();
@@ -1844,7 +1843,8 @@
         svg.setAttribute("width", W);
         svg.removeAttribute("viewBox");
         const nodeCount = HEURISTIC_IDS.length + 2; // +2 for TX_IN and VERDICT
-        const padL = 80, padR = 20;
+        const padL = 80,
+          padR = 20;
         const totalSlots = nodeCount + 1;
         const slotW = (W - padL - padR) / totalSlots;
 
@@ -2088,6 +2088,21 @@
         renderScriptChart(summary.script_type_distribution || {});
         renderFeeChart(summary.fee_rate_stats || {});
       }
+
+      // Re-render all SVG charts on container resize for full responsiveness
+      let _resizeTimer = null;
+      const _resizeObserver = new ResizeObserver(() => {
+        clearTimeout(_resizeTimer);
+        _resizeTimer = setTimeout(() => {
+          if (!currentData) return;
+          const summary = currentData.analysis_summary || {};
+          renderScriptChart(summary.script_type_distribution || {});
+          renderFeeChart(summary.fee_rate_stats || {});
+          renderPipeline(currentData.blocks || []);
+        }, 80);
+      });
+      _resizeObserver.observe(document.getElementById("charts-row"));
+      _resizeObserver.observe(document.getElementById("pipeline-wrap"));
 
       function renderScriptChart(scriptDist) {
         const svg = document.getElementById("script-chart");
