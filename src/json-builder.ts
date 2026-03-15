@@ -87,6 +87,8 @@ export interface BlockAnalysisSummary {
 /** Per-transaction heuristic + classification result in the JSON output. */
 export interface TxJsonEntry {
   txid: string;
+  input_count: number;
+  output_count: number;
   heuristics: TxHeuristicResults;
   classification: TxClassification;
 }
@@ -213,6 +215,8 @@ function buildBlockEntry(
     };
     txEntries = txResults.map((r) => ({
       txid: r.tx.txid,
+      input_count: r.tx.inputs.length,
+      output_count: r.tx.outputs.length,
       heuristics: r.heuristics, // invariant 9: all 9 keys present
       classification: r.classification, // invariant 10: valid enum
     }));
