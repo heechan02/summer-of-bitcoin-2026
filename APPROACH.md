@@ -378,30 +378,47 @@ ransomware laundering, and certain payment processors.
 **Algorithm**:
 
 ```
-# Build intra-block UTXO set
-blockTxIds ← set of all txids created in this block
+SKEW_RATIO_THRESHOLD = 0.1   ← small output must be < 10% of large output
+MIN_HOPS             = 2
+HIGH_CONFIDENCE_HOPS = 3
 
-for each input in tx:
-    if tx.inputs.length == 1
-       AND tx.outputs.length == 2
-       AND input.prevTxid ∈ blockTxIds:
-        return { detected: true, confidence: "high", parentTxid: input.prevTxid }
+# Step 1: structural guard
+spendable ← tx.outputs where script_type ≠ "op_return"
+if spendable.length ≠ 2 → { detected: false }
+
+smaller, larger ← min/max(spendable[].value_sats)
+if smaller / larger ≥ SKEW_RATIO_THRESHOLD → { detected: false }
+
+# Step 2: forward-trace the chain within the block
+hops ← 1 + traceChain(tx.txid, largerOutput.index, ctx, depth=0)
+
+function traceChain(txid, outputIndex, ctx, depth):
+    if depth ≥ MAX_HOPS → return 0
+    spendingTxid ← ctx.utxoSpentByMap[txid:outputIndex]
+    if not found → return 0
+    repeat skew check on spending tx outputs
+    if skew fails → return 0
+    return 1 + traceChain(spendingTxid, largerOut.index, ctx, depth+1)
+
+if hops < MIN_HOPS → { detected: false }
+confidence ← "high" if hops ≥ HIGH_CONFIDENCE_HOPS else "medium"
+return { detected: true, chain_length: hops, confidence }
 ```
 
 **Confidence table**:
 
 | Signal | Confidence | Rationale |
 |---|:---:|---|
-| 1 input, 2 outputs, parent in **same block** | **high** | Intra-block chain — unambiguous |
-| 1 input, 2 outputs, parent in **prior block** | **medium** | Structural pattern without intra-block proof |
-| 1 input, 1 output | **low** | Simple sweep — not definitively peeling |
+| Skewed 2-output tx, chain length ≥ 3 hops | **high** | Multi-hop forward trace — unambiguous laundering pattern |
+| Skewed 2-output tx, chain length = 2 hops | **medium** | Two-transaction peel — consistent with pattern but short |
 
 **Known limitations**:
-- Cross-block peeling chains (parent tx in an earlier block) require maintaining a cross-block UTXO set — not implemented in this single-block scope.
-- Intra-block detection captures the most forensically interesting cases (same-block laundering).
+- Cross-block peeling chains only traced within the current block via `utxoSpentByMap`; chains that span block boundaries are not followed.
+- The skew ratio threshold (10%) is configurable; tighter ratios increase precision but reduce recall.
 
 **Example**: A ransomware operator receives 1 BTC in block N, immediately spends 0.9 BTC to the
-next hop within the same block. Each hop: 1 input, 2 outputs (payment + change).
+next hop within the same block. Each hop: 2 outputs, small/large ratio < 10%. Three consecutive
+hops in the same block → `chain_length: 3`, `confidence: "high"`.
 
 ---
 
@@ -423,7 +440,8 @@ for each output:
         if output.value % threshold === 0:   ← integer modulo only
             roundOutputs.push({ index, value, threshold })
 
-if roundOutputs.length > 0 AND tx.outputs.length >= 2:
+if roundOutputs.length > 0:
+    confidence ← highest(roundOutputs[].confidence)
     return { detected: true, roundOutputs, confidence }
 ```
 
@@ -436,8 +454,9 @@ if roundOutputs.length > 0 AND tx.outputs.length >= 2:
 | Signal | Confidence | Rationale |
 |---|:---:|---|
 | Output value % 100_000_000 === 0 (1 BTC) | **high** | Extremely strong round-number signal |
-| Output value % 10_000_000 === 0 (0.1 BTC) | **medium** | Common payment denomination |
-| Output value % 1_000_000 === 0 (0.01 BTC) | **low** | Fairly frequent coincidence |
+| Output value % 10_000_000 === 0 (0.1 BTC) | **high** | Very common payment denomination; strong signal |
+| Output value % 1_000_000 === 0 (0.01 BTC) | **medium** | Fairly common denomination; moderate signal |
+| Output value % 100_000 === 0 (0.001 BTC) | **low** | Weakest threshold; frequent coincidence |
 
 **Known limitations**:
 - Change outputs that happen to be exact multiples produce false positives (e.g., change of exactly 0.5 BTC).
@@ -461,7 +480,7 @@ flowchart TD
     CON -->|yes| LCON[🗜 consolidation]
     CON -->|no| ST{self_transfer\ndetected?}
     ST -->|yes| LST[↩ self_transfer]
-    ST -->|no| OUT{outputs ≥ 3?}
+    ST -->|no| OUT{outputs ≥ 4?}
     OUT -->|yes| LBP[📦 batch_payment]
     OUT -->|no| TWO{outputs == 2?}
     TWO -->|yes| LSP[💳 simple_payment]
@@ -475,7 +494,7 @@ flowchart TD
 | 1 | `coinjoin` | Equal-output fingerprint is unambiguous; beats consolidation (both have many inputs) |
 | 2 | `consolidation` | Many-input, few-output structure is stronger than self-transfer signal alone |
 | 3 | `self_transfer` | Explicit address overlap; beats structural inferences |
-| 4 | `batch_payment` | ≥3 outputs when no stronger signal applies |
+| 4 | `batch_payment` | ≥4 outputs when no stronger signal applies |
 | 5 | `simple_payment` | Canonical 2-output pattern |
 | 6 | `unknown` | Coinbase, 0-output, or edge cases |
 
