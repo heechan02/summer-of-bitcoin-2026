@@ -276,7 +276,7 @@
       /* ── Charts row ────────────────────────────────────────────── */
       #charts-row {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 16px;
       }
       .chart-card {
@@ -289,32 +289,32 @@
       #fee-stat-cards {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 6px;
-        margin-bottom: 10px;
+        gap: 10px;
+        margin-bottom: 12px;
       }
       .fee-stat-card {
-        border-radius: 6px;
-        padding: 6px 8px;
+        border-radius: 8px;
+        padding: 12px 10px;
         background: rgba(255, 255, 255, 0.03);
         text-align: center;
         border: 1px solid;
       }
       .fee-stat-label {
-        font-size: 9px;
-        letter-spacing: 1px;
+        font-size: 10px;
+        letter-spacing: 1.5px;
         color: rgba(232, 244, 248, 0.4);
-        margin-bottom: 2px;
+        margin-bottom: 6px;
       }
       .fee-stat-value {
         font-family: "Courier New", monospace;
-        font-size: 15px;
+        font-size: 20px;
         font-weight: bold;
         line-height: 1.2;
       }
       .fee-stat-desc {
-        font-size: 7.5px;
+        font-size: 9px;
         color: rgba(232, 244, 248, 0.25);
-        margin-top: 2px;
+        margin-top: 6px;
       }
 
       /* ── Case Files ────────────────────────────────────────────── */
@@ -1020,6 +1020,10 @@
           <div class="chart-card">
             <div class="section-title">Script Type Distribution</div>
             <svg id="script-chart" width="100%" height="200"></svg>
+          </div>
+          <div class="chart-card">
+            <div class="section-title">Classification Distribution</div>
+            <svg id="class-chart" width="100%" height="200"></svg>
           </div>
           <div class="chart-card">
             <div class="section-title">Fee Rate Statistics (sat/vB)</div>
@@ -1855,6 +1859,7 @@
       function renderCharts(summary) {
         renderScriptChart(summary.script_type_distribution || {});
         renderFeeChart(summary.fee_rate_stats || {});
+        renderClassChart(allTxs);
       }
 
       // Re-render SVG charts only when window width actually changes (not layout shifts)
@@ -1870,9 +1875,113 @@
           const summary = currentData.analysis_summary || {};
           renderScriptChart(summary.script_type_distribution || {});
           renderFeeChart(summary.fee_rate_stats || {});
+          renderClassChart(allTxs);
           renderPipeline(currentData.blocks || []);
         }, 100);
       });
+
+      function renderClassChart(txs) {
+        const svg = document.getElementById("class-chart");
+        if (!svg) return;
+        svg.innerHTML = "";
+
+        const counts = {};
+        for (const cls of Object.keys(BADGE_MAP)) counts[cls] = 0;
+        (txs || []).forEach((tx) => {
+          if (counts[tx.classification] !== undefined) counts[tx.classification]++;
+        });
+
+        const entries = Object.entries(BADGE_MAP)
+          .map(([cls, badge]) => [cls, badge, counts[cls] || 0])
+          .filter(([, , n]) => n > 0)
+          .sort((a, b) => b[2] - a[2]);
+
+        if (!entries.length) return;
+
+        const total = entries.reduce((s, [, , n]) => s + n, 0) || 1;
+        const W = svg.parentElement.clientWidth || 400;
+        const barH = 12;
+        const labelW = 80;
+        const valueW = 110;
+        const barW = Math.max(W - labelW - valueW - 20, 100);
+        const padTop = 10;
+        const totalH = 200;
+        const rowH = Math.floor((totalH - padTop - 10) / Math.max(entries.length, 1));
+
+        svg.setAttribute("height", totalH);
+
+        entries.forEach(([cls, badge, count], i) => {
+          const y = padTop + i * rowH;
+          const pct = count / total;
+          const fillW = Math.max(pct * barW, 2);
+          const color = badge.color;
+
+          // Label
+          const label = svgEl("text", {
+            x: 0,
+            y: y + barH / 2 + 1,
+            "dominant-baseline": "middle",
+            fill: "rgba(232,244,248,0.6)",
+            "font-size": 10,
+            "font-family": "sans-serif",
+          });
+          label.textContent = `${badge.emoji} ${badge.label}`;
+          svg.appendChild(label);
+
+          // Bar background
+          svg.appendChild(
+            svgEl("rect", {
+              x: labelW,
+              y,
+              width: barW,
+              height: barH,
+              fill: "rgba(255,255,255,0.04)",
+              rx: 4,
+            }),
+          );
+
+          // Bar fill
+          const bar = svgEl("rect", {
+            x: labelW,
+            y,
+            width: 0,
+            height: barH,
+            fill: color,
+            rx: 4,
+            opacity: 0.8,
+          });
+          svg.appendChild(bar);
+
+          // Animate bar width
+          const targetW = fillW;
+          const startTime = performance.now() + i * 60;
+          function animBar(now) {
+            if (now < startTime) {
+              requestAnimationFrame(animBar);
+              return;
+            }
+            const progress = Math.min((now - startTime) / 500, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            bar.setAttribute("width", targetW * ease);
+            if (progress < 1) requestAnimationFrame(animBar);
+          }
+          requestAnimationFrame(animBar);
+
+          // Value text
+          const valText = svgEl("text", {
+            x: labelW + barW + 8,
+            y: y + barH / 2 + 1,
+            "dominant-baseline": "middle",
+            fill: color,
+            "font-size": 10,
+            "font-weight": "600",
+            "font-family": "Courier New",
+          });
+          valText.textContent =
+            count.toLocaleString() + " (" + (pct * 100).toFixed(1) + "%)";
+          svg.appendChild(valText);
+        });
+      }
 
       function renderScriptChart(scriptDist) {
         const svg = document.getElementById("script-chart");
@@ -1887,10 +1996,11 @@
         const labelW = 80;
         const valueW = 110;
         const barW = Math.max(W - labelW - valueW - 20, 100);
-        const rowH = 22;
         const padTop = 10;
+        const totalH = 200;
+        const rowH = Math.floor((totalH - padTop - 10) / Math.max(entries.length, 1));
 
-        svg.setAttribute("height", entries.length * rowH + padTop + 10);
+        svg.setAttribute("height", totalH);
 
         entries.forEach(([type, count], i) => {
           const y = padTop + i * rowH;
