@@ -1,0 +1,10 @@
+out/
+dist/
+node_modules/
+__pycache__/
+target/
+.env
+
+# Project documentation (local only)
+CLAUDE.md
+PLAN.md

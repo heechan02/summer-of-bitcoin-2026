@@ -1,0 +1,858 @@
+/* ============================================================================
+   THE COIN SMITH'S FORGE - STYLESHEET
+   ============================================================================ */
+
+/* ============================================================================
+   GLOBAL STYLES & FORGE THEME
+   ============================================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Forge Color Palette */
+  --forge-bg: #1a1a1a;
+  --stone-dark: #2a2a2a;
+  --stone-light: #3a3a3a;
+  --metal-gold: #d4af37;
+  --metal-silver: #c0c0c0;
+  --metal-bronze: #cd7f32;
+  --metal-iron: #6b6b6b;
+  --fire-blue: #4a9eff;
+  --fire-yellow: #ffaa00;
+  --fire-orange: #ff6b00;
+  --fire-red: #ff3300;
+  --fire-white: #fff5cc;
+  --coal-black: #0a0a0a;
+  --parchment: #f4e8d8;
+  --warning-red: #dc3545;
+  --warning-yellow: #ffc107;
+  --success-green: #28a745;
+  --text-light: #e0e0e0;
+  --text-dark: #333;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, var(--coal-black) 0%, var(--forge-bg) 50%, var(--stone-dark) 100%);
+  background-attachment: fixed;
+  color: var(--text-light);
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+/* ============================================================================
+   HEADER
+   ============================================================================ */
+
+.forge-header {
+  background: linear-gradient(to right, var(--stone-dark), var(--stone-light));
+  border-bottom: 4px solid var(--metal-bronze);
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.forge-header h1 {
+  font-size: 3rem;
+  color: var(--metal-gold);
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+}
+
+.forge-header .tagline {
+  font-size: 1.2rem;
+  color: var(--metal-silver);
+  font-style: italic;
+}
+
+/* ============================================================================
+   MAIN CONTAINER
+   ============================================================================ */
+
+.forge-container {
+  max-width: 1400px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+/* ============================================================================
+   FIXTURE LOADER
+   ============================================================================ */
+
+.loader-section {
+  background: var(--stone-dark);
+  border: 3px solid var(--metal-bronze);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.loader-section h2 {
+  color: var(--metal-gold);
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.loader-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#fixtureInput {
+  width: 100%;
+  padding: 1rem;
+  background: var(--coal-black);
+  border: 2px solid var(--metal-iron);
+  border-radius: 8px;
+  color: var(--metal-silver);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+#sampleSelector {
+  flex: 1;
+  padding: 0.75rem;
+  background: var(--stone-light);
+  border: 2px solid var(--metal-iron);
+  border-radius: 8px;
+  color: var(--text-light);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--fire-orange), var(--fire-red));
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 0, 0.6);
+}
+
+.btn-secondary {
+  background: var(--stone-light);
+  color: var(--text-light);
+  border: 2px solid var(--metal-bronze);
+}
+
+.btn-secondary:hover {
+  background: var(--metal-bronze);
+  color: white;
+}
+
+/* ============================================================================
+   ERROR DISPLAY
+   ============================================================================ */
+
+.error-card {
+  background: var(--warning-red);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border-left: 6px solid darkred;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.error-card h3 {
+  margin-bottom: 0.5rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================================================================
+   FORGE WORKSPACE (Main Visualization)
+   ============================================================================ */
+
+.forge-section {
+  background: var(--stone-dark);
+  border: 3px solid var(--metal-bronze);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.forge-section h2 {
+  color: var(--metal-gold);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+.forge-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.forge-station {
+  background: var(--coal-black);
+  border: 2px solid var(--metal-iron);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.forge-station h3 {
+  color: var(--metal-silver);
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+/* Input/Output Lists */
+.material-list, .coins-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.material-item, .coin-item {
+  background: var(--stone-light);
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 4px solid var(--metal-iron);
+  font-size: 0.9rem;
+}
+
+.material-item .metal-type {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.metal-gold .metal-type { color: var(--metal-gold); }
+.metal-silver .metal-type { color: var(--metal-silver); }
+.metal-bronze .metal-type { color: var(--metal-bronze); }
+.metal-iron .metal-type { color: var(--metal-iron); }
+
+.material-item .value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--fire-yellow);
+}
+
+.material-item .txid {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: var(--metal-iron);
+  word-break: break-all;
+}
+
+.coin-item {
+  position: relative;
+}
+
+.coin-item.change {
+  border-left-color: var(--fire-blue);
+  background: linear-gradient(135deg, var(--stone-light), #1a3a5a);
+}
+
+.coin-item .change-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--fire-blue);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.total-display {
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.75rem;
+  background: var(--stone-dark);
+  border-radius: 6px;
+  color: var(--metal-gold);
+}
+
+/* Crucible (Center) */
+.crucible-station {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.crucible {
+  width: 100%;
+}
+
+.fire {
+  text-align: center;
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: flicker 2s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.fire.cold { filter: hue-rotate(180deg); }
+.fire.warm { filter: hue-rotate(20deg); }
+.fire.hot { filter: hue-rotate(0deg); }
+.fire.very-hot { filter: brightness(1.5); }
+
+.balance-equation {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--stone-dark);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.balance-equation > div {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.eq-inputs, .eq-outputs { color: var(--fire-yellow); font-size: 1.1rem; }
+.eq-fee { color: var(--fire-orange); font-size: 1.1rem; }
+.eq-equals, .eq-plus { color: var(--metal-silver); }
+
+.bellows {
+  text-align: center;
+  padding: 1rem;
+  background: var(--stone-dark);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.bellows-label {
+  font-size: 0.9rem;
+  color: var(--metal-silver);
+  margin-bottom: 0.5rem;
+}
+
+.fee-rate-display {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--fire-yellow);
+}
+
+.vbytes-display {
+  text-align: center;
+  padding: 0.75rem;
+  background: var(--stone-dark);
+  border-radius: 8px;
+  color: var(--metal-silver);
+}
+
+.vbytes-display span {
+  color: var(--fire-yellow);
+  font-weight: 700;
+}
+
+/* ============================================================================
+   SMITHING TECHNIQUES
+   ============================================================================ */
+
+.techniques-section {
+  background: var(--stone-dark);
+  border: 3px solid var(--metal-bronze);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.techniques-section h2 {
+  color: var(--metal-gold);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.techniques-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.technique-card {
+  background: var(--coal-black);
+  border: 2px solid var(--metal-iron);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.technique-card h3 {
+  color: var(--metal-silver);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.technique-status {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.status-enabled {
+  color: var(--success-green);
+  font-weight: 600;
+}
+
+.status-disabled {
+  color: var(--metal-iron);
+}
+
+/* ============================================================================
+   QUALITY CONTROL (Warnings)
+   ============================================================================ */
+
+.warnings-section {
+  background: var(--stone-dark);
+  border: 3px solid var(--metal-bronze);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.warnings-section h2 {
+  color: var(--metal-gold);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.warnings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.warning-card {
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.warning-HIGH_FEE {
+  background: rgba(220, 53, 69, 0.2);
+  border-left-color: var(--warning-red);
+}
+
+.warning-DUST_CHANGE {
+  background: rgba(255, 193, 7, 0.2);
+  border-left-color: var(--warning-yellow);
+}
+
+.warning-SEND_ALL {
+  background: rgba(74, 158, 255, 0.2);
+  border-left-color: var(--fire-blue);
+}
+
+.warning-RBF_SIGNALING {
+  background: rgba(40, 167, 69, 0.2);
+  border-left-color: var(--success-green);
+}
+
+.warning-card h4 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.warning-card p {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  opacity: 0.9;
+}
+
+.no-warnings {
+  text-align: center;
+  padding: 2rem;
+  color: var(--success-green);
+  font-size: 1.2rem;
+}
+
+/* ============================================================================
+   BLUEPRINT (PSBT)
+   ============================================================================ */
+
+.blueprint-section {
+  background: var(--parchment);
+  border: 3px solid var(--metal-bronze);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  color: var(--text-dark);
+}
+
+.blueprint-section h2 {
+  color: var(--metal-bronze);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.blueprint-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#psbtDisplay {
+  width: 100%;
+  min-height: 150px;
+  padding: 1rem;
+  background: white;
+  border: 2px solid var(--metal-iron);
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  resize: vertical;
+}
+
+/* ============================================================================
+   GLOSSARY SIDEBAR
+   ============================================================================ */
+
+.glossary-sidebar {
+  position: fixed;
+  right: 0;
+  top: 100px;
+  z-index: 1000;
+}
+
+.glossary-toggle {
+  background: var(--metal-bronze);
+  color: white;
+  border: none;
+  padding: 1rem;
+  cursor: pointer;
+  border-radius: 8px 0 0 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.glossary-toggle:hover {
+  background: var(--metal-gold);
+  transform: translateX(-5px);
+}
+
+.glossary-content {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 350px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: var(--stone-dark);
+  border: 3px solid var(--metal-bronze);
+  border-radius: 8px 0 0 8px;
+  padding: 1.5rem;
+  box-shadow: -4px 4px 20px rgba(0, 0, 0, 0.5);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.glossary-content.visible {
+  transform: translateX(0);
+}
+
+.glossary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--metal-bronze);
+}
+
+.glossary-content h3 {
+  color: var(--metal-gold);
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.glossary-close {
+  background: none;
+  border: none;
+  color: var(--metal-silver);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.glossary-close:hover {
+  background: var(--warning-red);
+  color: white;
+  transform: scale(1.1);
+}
+
+.glossary-term {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--metal-iron);
+}
+
+.glossary-term:last-child {
+  border-bottom: none;
+}
+
+.glossary-term strong {
+  color: var(--metal-silver);
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.glossary-term p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-light);
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.forge-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--stone-dark);
+  border-top: 2px solid var(--metal-bronze);
+  padding: 1rem;
+  text-align: center;
+  color: var(--metal-silver);
+  font-size: 0.9rem;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .forge-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .glossary-sidebar {
+    position: static;
+    transform: none;
+    margin: 2rem;
+  }
+
+  .glossary-toggle {
+    border-radius: 8px;
+    width: 100%;
+  }
+
+  .glossary-content {
+    position: static;
+    width: 100%;
+    border-radius: 8px;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .forge-header h1 {
+    font-size: 2rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .techniques-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================================
+   PRIVACY SECTION
+   ============================================================================ */
+
+.privacy-section {
+  background: var(--stone-dark);
+  border: 2px solid var(--metal-bronze);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.privacy-section h2 {
+  color: var(--parchment);
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+  text-align: center;
+}
+
+.privacy-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.privacy-meter {
+  background: var(--stone-light);
+  border: 2px solid var(--metal-iron);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.privacy-score-display {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.score-value {
+  color: var(--metal-gold);
+}
+
+.score-label {
+  font-size: 1.5rem;
+  color: var(--text-light);
+}
+
+.privacy-bar {
+  height: 24px;
+  background: var(--stone-dark);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1rem 0;
+  border: 1px solid var(--metal-iron);
+}
+
+.privacy-bar-fill {
+  height: 100%;
+  background: var(--success-green);
+  transition: width 0.5s ease, background-color 0.5s ease;
+  border-radius: 12px;
+}
+
+.privacy-rating {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.privacy-risks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.no-risks {
+  background: var(--stone-light);
+  border: 2px solid var(--success-green);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--success-green);
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.privacy-risk-card {
+  background: var(--stone-light);
+  border-radius: 8px;
+  padding: 1rem;
+  border-left: 4px solid var(--metal-iron);
+}
+
+.privacy-risk-card.severity-high {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.privacy-risk-card.severity-medium {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.privacy-risk-card.severity-low {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.risk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.risk-icon {
+  font-size: 1.25rem;
+}
+
+.risk-code {
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--parchment);
+  flex: 1;
+}
+
+.risk-severity {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  background: var(--stone-dark);
+}
+
+.risk-description {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-left: 2rem;
+}
+
+/* Responsive privacy section */
+@media (max-width: 768px) {
+  .privacy-container {
+    grid-template-columns: 1fr;
+  }
+}
