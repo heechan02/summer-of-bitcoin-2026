@@ -69,13 +69,11 @@ npm test
 
 ### The Problem
 
-My block parser only extracted the first block from each `.dat` file instead of all blocks. The fixture files contained 84 blocks in `blk04330.dat` and 78 blocks in `blk05051.dat`, but my output reported `block_count: 1` for both.
+Both fixture files contained multiple blocks (`blk04330.dat` has 84, `blk05051.dat` has 78), but my output reported `block_count: 1` for both.
 
 ### Root Cause
 
-When building Challenge 3, I reused the block parsing logic from Challenge 1. In Challenge 1, the block mode tests only used single-block files, so the parser worked correctly. When Challenge 3 required parsing multi-block files, I didn't update the iteration logic — the parser would read the first block, process it, and return without continuing to read subsequent blocks from the same file.
-
-The REQUIREMENTS were explicit: _"A single `blk*.dat` file may contain multiple blocks. Both the JSON and Markdown outputs should cover all blocks in the file."_
+Two separate bugs combined to produce `block_count: 1`. First, `parseUndoFile()` was unaware that Bitcoin Core appends a 32-byte checksum after each undo record (not counted in the size field), so it broke out of its loop after parsing the first record and returned only 1 undo block. Second, `chain-analyzer.ts` used a greedy orphan-detection guard (`txPrevouts.length !== nonCbCount`) to match blocks to undo records — with only 1 undo record available, every block after the first was skipped as an apparent orphan.
 
 ### Why It Wasn't Caught Earlier
 
@@ -83,11 +81,15 @@ The automated grader only validated structural correctness — it checked that f
 
 ### The Fix
 
-In `chain-analyzer.ts`, the original `analyzeBlockFile()` function called `parseBlocks()` (which correctly returns a `ParsedBlock[]` array) but only processed `parsedBlocks[0]` — the first element. The fix was replacing that single-element access with a `for` loop that iterates over the entire `parsedBlocks` array, pairing each block with its corresponding undo record via the sequential greedy matching algorithm. The `parseBlocks()` function itself already handled multi-block files correctly by looping on the magic number (`0xF9BEB4D9`) until the buffer is exhausted — the bug was entirely in the calling code that discarded every block after the first.
+There were two bugs, not one.
+
+**Bug 1 — `parseUndoFile()` in `undo-parser.ts`:** Diagnosed with a debug log: `parsedBlocks=84 undoBlocks=1`. The block parser was fine; the undo parser returned only 1 record. After each undo record, Bitcoin Core appends a 32-byte checksum that is *not* counted in the `undoSize` field. The original loop did `reader.skip(undoSize)` and looped back expecting the next magic byte — but landed on the checksum bytes instead, which don't match `0xF9BEB4D9`, so the loop broke after the first record. Fix: `reader.skip(undoSize + 32)`.
+
+**Bug 2 — greedy orphan detection in `chain-analyzer.ts`:** After fixing Bug 1, `blk04330` worked (84 blocks) but `blk05051` still produced `block_count: 2` because the `txPrevouts.length !== nonCbCount` guard was misfiring and skipping nearly every block as an "orphan". The guard was wrong in principle: `rev*.dat` only contains undo records for main-chain blocks — there are no real orphans to skip. Fix: replace the greedy matching condition with simple sequential pairing (`break` if `undoIdx >= undoBlocks.length`, otherwise always advance both indices together).
 
 ### Lesson Learned
 
-This was fundamentally a code reuse mistake — I assumed logic from a previous challenge would transfer directly without re-reading the requirements carefully. In Bitcoin development, where a single parsing error can have cascading consequences, this kind of assumption is exactly the type of bug that code review catches. It reinforced why the Bitcoin Core development process emphasises thorough review and testing.
+Both bugs were invisible to the automated grader because the output was internally consistent for 1 block. It took actually looking at the transaction counts to notice something was wrong. The deeper lesson: automated tests verify structure, not correctness — and an assumption about Bitcoin Core's file format (no trailing checksum) that was never verified against the spec caused a silent failure across 83 out of 84 blocks.
 
 ## Approach & Design Decisions
 

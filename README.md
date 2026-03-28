@@ -49,11 +49,9 @@ Applies chain analysis heuristics to real Bitcoin mainnet block data. Implements
 
 ### Post-Submission Fix (Challenge 3)
 
-After submission, I identified the critical bug that cost me the challenge: the block parser was only extracting the first block from each `.dat` file instead of all blocks. The fixture files contained 84 and 78 blocks respectively, but my output reported `block_count: 1` for both. This was caused by reusing the single-block parsing logic from Challenge 1 without adapting it for the multi-block iteration required in Challenge 3.
+After submission, I identified two bugs that combined to produce `block_count: 1` for fixture files containing 84 and 78 blocks respectively. First, `parseUndoFile()` was unaware that Bitcoin Core appends a 32-byte checksum after each undo record (not counted in the size field), so it stopped parsing after the first record. Second, the block/undo matching code used a guard that skipped every unmatched block as an "orphan" — with only 1 undo record parsed, all remaining blocks were silently dropped.
 
-The automated grader didn't catch this because the output was structurally valid for 1 block — field types were correct and internal values were consistent. The manual reviewer correctly identified the issue.
-
-The fix and the lessons learned are documented in the commit history.
+The automated grader didn't catch this because the output was structurally valid for 1 block. The fix is documented in the Challenge 3 README.
 
 ## How to Run
 

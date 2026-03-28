@@ -157,18 +157,10 @@ export function analyzeBlockFile(
     // parsedBlocks[blockIdx] is always defined because blockIdx < parsedBlocks.length
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const block = parsedBlocks[blockIdx]!;
-    const nonCbCount = block.transactions.length - 1;
 
-    const currentUndo = undoBlocks[undoIdx];
-    if (undoIdx >= undoBlocks.length || currentUndo === undefined || currentUndo.txPrevouts.length !== nonCbCount) {
-      // Orphan block — skip silently
-      console.error(
-        `[chain-analyzer] Skipping orphan block at index ${blockIdx} (nonCbCount=${nonCbCount}, undoIdx=${undoIdx})`,
-      );
-      continue;
-    }
-
-    const undoBlock = currentUndo;
+    if (undoIdx >= undoBlocks.length) break;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const undoBlock = undoBlocks[undoIdx]!;
     undoIdx++;
 
     // STEP 5: Build AnalyzableTx[] for this block

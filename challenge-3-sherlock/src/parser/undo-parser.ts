@@ -33,7 +33,7 @@ export function parseUndoFile(data: Buffer): UndoBlock[] {
 
     const block = parseUndoBlock(undoReader);
     blocks.push(block);
-    reader.skip(undoSize);
+    reader.skip(undoSize + 32); // skip undo data + 32-byte checksum appended by Bitcoin Core
   }
 
   return blocks;
