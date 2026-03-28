@@ -1,0 +1,29 @@
+{
+  "name": "2026-developer-challenge-1-chain-lens-heechan02",
+  "version": "1.0.0",
+  "description": "[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/BdrW_bK5) # Week 1 Challenge: Chain Lens",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SummerOfBitcoin/2026-developer-challenge-1-chain-lens-heechan02.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SummerOfBitcoin/2026-developer-challenge-1-chain-lens-heechan02/issues"
+  },
+  "homepage": "https://github.com/SummerOfBitcoin/2026-developer-challenge-1-chain-lens-heechan02#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

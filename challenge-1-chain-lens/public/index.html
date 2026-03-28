@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chain Lens — Bitcoin Transaction Visualizer</title>
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --border: #2d3048;
+        --accent: #f7931a;
+        --accent2: #3b82f6;
+        --green: #22c55e;
+        --red: #ef4444;
+        --yellow: #f59e0b;
+        --text: #e2e8f0;
+        --muted: #64748b;
+        --card: #1e2130;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Segoe UI", system-ui, sans-serif;
+        min-height: 100vh;
+      }
+      header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      header h1 {
+        font-size: 1.4rem;
+        color: var(--accent);
+      }
+      header span {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        padding: 0 24px;
+      }
+      .tab {
+        padding: 12px 20px;
+        cursor: pointer;
+        color: var(--muted);
+        border-bottom: 2px solid transparent;
+        font-size: 0.9rem;
+      }
+      .tab.active {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .tab-content {
+        display: none;
+        padding: 24px;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      textarea {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 6px;
+        padding: 12px;
+        font-family: monospace;
+        font-size: 0.8rem;
+        resize: vertical;
+        min-height: 120px;
+      }
+      textarea:focus {
+        outline: 1px solid var(--accent);
+      }
+      input[type="file"] {
+        color: var(--text);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      .btn {
+        background: var(--accent);
+        color: #000;
+        font-weight: 700;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 24px;
+        cursor: pointer;
+        font-size: 0.95rem;
+      }
+      .btn:hover {
+        opacity: 0.85;
+      }
+      .btn-secondary {
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .grid3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+      }
+      .stat {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px;
+      }
+      .stat-label {
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .stat-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--accent);
+      }
+      .stat-sub {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .badge-blue {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--accent2);
+      }
+      .badge-green {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--green);
+      }
+      .badge-orange {
+        background: rgba(247, 147, 26, 0.2);
+        color: var(--accent);
+      }
+      .badge-red {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--red);
+      }
+      .badge-yellow {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--yellow);
+      }
+      .badge-gray {
+        background: rgba(100, 116, 139, 0.2);
+        color: var(--muted);
+      }
+      .flow {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        margin: 20px 0;
+        min-height: 120px;
+      }
+      .flow-col {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 180px;
+        justify-content: center;
+      }
+      .flow-arrows {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+      .flow-arrow {
+        color: var(--muted);
+        font-size: 1.5rem;
+      }
+      .flow-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
+      .flow-fee {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid var(--red);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        color: var(--red);
+      }
+      .flow-item-label {
+        font-size: 0.7rem;
+        color: var(--muted);
+      }
+      .flow-item-value {
+        font-weight: 700;
+      }
+      .mono {
+        font-family: monospace;
+        font-size: 0.78rem;
+        word-break: break-all;
+      }
+      .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .vin-vout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .io-entry {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
+      }
+      .io-entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .io-entry-sats {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--green);
+      }
+      .warning {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid var(--yellow);
+        border-radius: 6px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+      }
+      .technical {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px;
+        font-family: monospace;
+        font-size: 0.75rem;
+        word-break: break-all;
+        color: var(--muted);
+        display: none;
+      }
+      .toggle-tech {
+        font-size: 0.75rem;
+        color: var(--accent2);
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+      }
+      .savings-bar {
+        height: 16px;
+        border-radius: 4px;
+        overflow: hidden;
+        display: flex;
+        margin: 8px 0;
+      }
+      .savings-witness {
+        background: var(--green);
+      }
+      .savings-non-witness {
+        background: var(--accent);
+      }
+      #result {
+        margin-top: 24px;
+      }
+      .error-card {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid var(--red);
+        border-radius: 10px;
+        padding: 20px;
+      }
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: help;
+        border-bottom: 1px dashed var(--muted);
+      }
+      .tooltip-text {
+        visibility: hidden;
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        position: absolute;
+        z-index: 10;
+        left: calc(100% + 10px);
+        top: 50%;
+        bottom: auto;
+        transform: translateY(-50%);
+        width: 220px;
+        line-height: 1.4;
+      }
+      .tooltip:hover .tooltip-text {
+        visibility: visible;
+      }
+      .block-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .block-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .block-item:hover {
+        border-color: var(--accent);
+      }
+      pre {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px;
+        overflow-x: auto;
+        font-size: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div style="font-size: 1.5rem">⛓</div>
+      <h1>Chain Lens</h1>
+      <span>Bitcoin Transaction &amp; Block Visualizer</span>
+    </header>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('tx')">Transaction</div>
+      <div class="tab" onclick="switchTab('block')">Block</div>
+    </div>
+
+    <!-- Transaction Tab -->
+    <div id="tab-tx" class="tab-content active">
+      <div class="card">
+        <div class="section-title">Load a Transaction Fixture</div>
+        <label>Paste fixture JSON (or raw_tx + prevouts JSON):</label>
+        <textarea
+          id="fixture-input"
+          placeholder='{"network":"mainnet","raw_tx":"020000...","prevouts":[...]}'
+        ></textarea>
+        <div
+          style="
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+          "
+        >
+          <button class="btn" onclick="analyzeFixture()">Analyze</button>
+          <button class="btn-secondary" onclick="loadExample()">
+            Load Example
+          </button>
+          <span id="tx-spinner" style="display: none"
+            ><span class="spinner"></span
+          ></span>
+        </div>
+      </div>
+      <div id="result"></div>
+    </div>
+
+    <!-- Block Tab -->
+    <div id="tab-block" class="tab-content">
+      <div class="card">
+        <div class="section-title">Upload Block Files</div>
+        <label>blk*.dat file:</label>
+        <input type="file" id="blk-file" accept=".dat" />
+        <label>rev*.dat file:</label>
+        <input type="file" id="rev-file" accept=".dat" />
+        <label>xor.dat file:</label>
+        <input type="file" id="xor-file" accept=".dat" />
+        <div
+          style="
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+          "
+        >
+          <button class="btn" onclick="analyzeBlockFiles()">
+            Analyze Block
+          </button>
+          <span id="block-spinner" style="display: none"
+            ><span class="spinner"></span
+          ></span>
+        </div>
+      </div>
+      <div id="block-result"></div>
+    </div>
+
+    <script>
+      // ── Tab switching ──────────────────────────────────────────────────────────
+      function switchTab(name) {
+        document
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((t) => t.classList.remove("active"));
+        event.target.classList.add("active");
+        document.getElementById("tab-" + name).classList.add("active");
+      }
+
+      // ── Tooltip helpers ────────────────────────────────────────────────────────
+      const TIPS = {
+        txid: "Transaction ID — a unique fingerprint of this transaction, computed by double-SHA256 hashing the serialized bytes.",
+        wtxid:
+          "Witness Transaction ID — like txid but includes the witness data. Only exists for SegWit transactions.",
+        fee: "The difference between total inputs and total outputs. Paid to miners as an incentive to include your transaction in a block.",
+        feerate:
+          "Fee per virtual byte. Higher = faster confirmation. 1 sat/vB is very slow; 50+ sat/vB is fast.",
+        vbytes:
+          'Virtual bytes — the "effective size" of the transaction for fee purposes. SegWit witness data is counted at 1/4 weight.',
+        weight:
+          "BIP141 weight units. Non-witness bytes × 4 + witness bytes × 1. vBytes = ceil(weight / 4).",
+        segwit:
+          "SegWit (Segregated Witness) moves signature data outside the main transaction body, reducing the effective size and enabling new features.",
+        rbf: "Replace-by-Fee: if any input has sequence < 0xFFFFFFFE, the transaction can be replaced in the mempool with a higher-fee version.",
+        p2pkh:
+          "Pay-to-Public-Key-Hash — the classic Bitcoin address (starts with 1). Spends by providing a signature and public key.",
+        p2sh: "Pay-to-Script-Hash — wraps complex scripts behind a hash (starts with 3). Redeemed by providing the original script.",
+        p2wpkh:
+          "Pay-to-Witness-Public-Key-Hash — SegWit version of P2PKH (bc1q...). Signature goes in the witness field.",
+        p2wsh:
+          "Pay-to-Witness-Script-Hash — SegWit version of P2SH (bc1q...). Witness holds the script and signatures.",
+        p2tr: "Pay-to-Taproot — latest address type (bc1p...). Can spend via key or script path, with improved privacy.",
+        opreturn:
+          "OP_RETURN — output that encodes arbitrary data. Cannot be spent; used for messages, timestamps, protocol markers.",
+        locktime:
+          "Absolute timelock: the transaction cannot be mined before this block height or Unix timestamp.",
+        reltimelock:
+          "Relative timelock (BIP68): this input cannot be spent until N blocks (or seconds) have passed since the output being spent was confirmed.",
+      };
+
+      function tip(term, label) {
+        const text = TIPS[term] || "";
+        return `<span class="tooltip">${label}<span class="tooltip-text">${text}</span></span>`;
+      }
+
+      // ── Script type badge ──────────────────────────────────────────────────────
+      function scriptBadge(type) {
+        const map = {
+          p2pkh: ["badge-orange", "P2PKH"],
+          p2sh: ["badge-blue", "P2SH"],
+          "p2sh-p2wpkh": ["badge-blue", "P2SH-P2WPKH"],
+          "p2sh-p2wsh": ["badge-blue", "P2SH-P2WSH"],
+          p2wpkh: ["badge-green", "P2WPKH"],
+          p2wsh: ["badge-green", "P2WSH"],
+          p2tr: ["badge-yellow", "Taproot"],
+          p2tr_keypath: ["badge-yellow", "Taproot Key"],
+          p2tr_scriptpath: ["badge-yellow", "Taproot Script"],
+          op_return: ["badge-gray", "OP_RETURN"],
+          unknown: ["badge-red", "Unknown"],
+        };
+        const [cls, label] = map[type] || ["badge-gray", type];
+        return `<span class="badge ${cls}">${label}</span>`;
+      }
+
+      // ── Format sats ────────────────────────────────────────────────────────────
+      function fmtSats(n) {
+        if (n >= 1e8) return (n / 1e8).toFixed(8) + " BTC";
+        return n.toLocaleString() + " sats";
+      }
+
+      // ── Toggle technical section ───────────────────────────────────────────────
+      function toggleTech(id) {
+        const el = document.getElementById(id);
+        el.style.display = el.style.display === "block" ? "none" : "block";
+      }
+
+      // ── Load example ───────────────────────────────────────────────────────────
+      function loadExample() {
+        document.getElementById("fixture-input").value = JSON.stringify(
+          {
+            network: "mainnet",
+            raw_tx:
+              "02000000000102a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a10000000000feffffffb2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b20200000000fdffffff0210270000000000001600141313131313131313131313131313131313131313e02e00000000000022512014141414141414141414141414141414141414141414141414141414141414140247eed60c73dec1a4307bb6ade00521a58737c9e184e5f42329a9d82f63456c886ade14624e2f582c43767fffc7d06a49772d53847b711e86cb86cb46d018d9363b01f417e074a55421688bc8d5d9d8ab2ef6065ad8285a8faf92ca89371c9eb7478ec091bb36914b90440000000000",
+            prevouts: [
+              {
+                txid: "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+                vout: 0,
+                value_sats: 15000,
+                script_pubkey_hex:
+                  "00141515151515151515151515151515151515151515",
+              },
+              {
+                txid: "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+                vout: 2,
+                value_sats: 9000,
+                script_pubkey_hex:
+                  "76a914161616161616161616161616161616161616161688ac",
+              },
+            ],
+          },
+          null,
+          2,
+        );
+      }
+
+      // ── Analyze transaction ────────────────────────────────────────────────────
+      async function analyzeFixture() {
+        const raw = document.getElementById("fixture-input").value.trim();
+        if (!raw) return alert("Please paste a fixture JSON first.");
+        document.getElementById("tx-spinner").style.display = "inline-block";
+        document.getElementById("result").innerHTML = "";
+        let fixture;
+        try {
+          fixture = JSON.parse(raw);
+        } catch {
+          alert("Invalid JSON");
+          document.getElementById("tx-spinner").style.display = "none";
+          return;
+        }
+        try {
+          const resp = await fetch("/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(fixture),
+          });
+          const data = await resp.json();
+          document.getElementById("result").innerHTML = renderTx(data);
+        } catch (e) {
+          document.getElementById("result").innerHTML =
+            `<div class="error-card"><strong>Network error:</strong> ${e.message}</div>`;
+        }
+        document.getElementById("tx-spinner").style.display = "none";
+      }
+
+      // ── Render transaction result ──────────────────────────────────────────────
+      function renderTx(d) {
+        if (!d.ok) {
+          return `<div class="error-card"><strong>Error [${d.error.code}]:</strong> ${d.error.message}</div>`;
+        }
+
+        const warnings = d.warnings
+          .map((w) => {
+            const msgs = {
+              HIGH_FEE:
+                "⚠️ High fee detected — this transaction pays an unusually high fee.",
+              DUST_OUTPUT:
+                "⚠️ Dust output — one or more outputs are below the dust threshold (546 sats).",
+              UNKNOWN_OUTPUT_SCRIPT: "⚠️ Unknown output script type.",
+              RBF_SIGNALING:
+                "🔄 RBF signaling — this transaction can be replaced with a higher-fee version.",
+            };
+            return `<div class="warning">${msgs[w.code] || w.code}</div>`;
+          })
+          .join("");
+
+        // Savings bar
+        let savingsHtml = "";
+        if (d.segwit_savings) {
+          const s = d.segwit_savings;
+          const witnessW = ((s.witness_bytes / s.total_bytes) * 100).toFixed(1);
+          const nonW = (100 - parseFloat(witnessW)).toFixed(1);
+          savingsHtml = `
+    <div class="card">
+      <div class="section-title">⚡ SegWit Witness Discount</div>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">
+        SegWit data (signatures, witnesses) gets a 75% discount on fee weight. The bar shows the split:
+      </p>
+      <div style="display:flex;gap:8px;margin-bottom:6px;font-size:0.78rem">
+        <span style="color:var(--accent)">■ Non-witness: ${s.non_witness_bytes} bytes</span>
+        <span style="color:var(--green)">■ Witness: ${s.witness_bytes} bytes</span>
+      </div>
+      <div class="savings-bar">
+        <div class="savings-non-witness" style="width:${nonW}%"></div>
+        <div class="savings-witness" style="width:${witnessW}%"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="stat"><div class="stat-label">Actual weight</div><div class="stat-value">${s.weight_actual}</div><div class="stat-sub">WU</div></div>
+        <div class="stat"><div class="stat-label">Without SegWit</div><div class="stat-value">${s.weight_if_legacy}</div><div class="stat-sub">WU (hypothetical)</div></div>
+        <div class="stat"><div class="stat-label">Space saved</div><div class="stat-value" style="color:var(--green)">${s.savings_pct}%</div><div class="stat-sub">weight reduction</div></div>
+      </div>
+    </div>`;
+        }
+
+        // Flow diagram
+        const totalIn = d.total_input_sats;
+        const totalOut = d.total_output_sats;
+        const fee = d.fee_sats;
+        const flowHtml = `
+  <div class="card">
+    <div class="section-title">💸 Value Flow</div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">
+      Inputs (left) are old outputs being spent. Outputs (right) are new outputs being created.
+      The difference — the fee — goes to the miner.
+    </p>
+    <div class="flow">
+      <div class="flow-col">
+        ${d.vin
+          .map(
+            (v) => `<div class="flow-item">
+          <div class="flow-item-label">Input #${d.vin.indexOf(v)} ${scriptBadge(v.script_type)}</div>
+          <div class="flow-item-value">${fmtSats(v.prevout.value_sats)}</div>
+        </div>`,
+          )
+          .join("")}
+      </div>
+      <div class="flow-arrows">
+        <div style="font-size:0.8rem;color:var(--muted);margin-bottom:4px">Total in: ${fmtSats(totalIn)}</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-fee">⛏ Miner fee: ${fmtSats(fee)}</div>
+        <div class="flow-arrow">→</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Total out: ${fmtSats(totalOut)}</div>
+      </div>
+      <div class="flow-col">
+        ${d.vout
+          .map(
+            (v) => `<div class="flow-item">
+          <div class="flow-item-label">Output #${v.n} ${scriptBadge(v.script_type)}</div>
+          <div class="flow-item-value">${v.script_type === "op_return" ? "(data)" : fmtSats(v.value_sats)}</div>
+        </div>`,
+          )
+          .join("")}
+      </div>
+    </div>
+  </div>`;
+
+        // Stats
+        const statsHtml = `
+  <div class="grid3" style="margin-bottom:16px">
+    <div class="stat"><div class="stat-label">${tip("txid", "Transaction ID")}</div><div style="font-size:0.7rem;font-family:monospace;word-break:break-all;margin-top:4px">${d.txid}</div></div>
+    <div class="stat"><div class="stat-label">Fee</div><div class="stat-value" style="color:var(--red)">${fmtSats(d.fee_sats)}</div><div class="stat-sub">${tip("feerate", "Fee rate")}: ${d.fee_rate_sat_vb} sat/vB</div></div>
+    <div class="stat"><div class="stat-label">Size / ${tip("vbytes", "vBytes")} / ${tip("weight", "Weight")}</div><div class="stat-value">${d.size_bytes}B</div><div class="stat-sub">${d.vbytes} vB · ${d.weight} WU</div></div>
+    <div class="stat"><div class="stat-label">Inputs / Outputs</div><div class="stat-value">${d.vin.length} → ${d.vout.length}</div></div>
+    <div class="stat"><div class="stat-label">${tip("segwit", "SegWit")}</div><div class="stat-value">${d.segwit ? "✅ Yes" : "❌ No"}</div>${d.wtxid ? `<div class="stat-sub mono">${d.wtxid.slice(0, 16)}…</div>` : ""}</div>
+    <div class="stat"><div class="stat-label">${tip("rbf", "RBF")}</div><div class="stat-value" style="color:${d.rbf_signaling ? "var(--yellow)" : "var(--green)"}">${d.rbf_signaling ? "⚠ Yes" : "✅ No"}</div>
+    <div class="stat-sub">${tip("locktime", "Locktime")}: ${d.locktime_type === "none" ? "none" : d.locktime_value + " (" + d.locktime_type + ")"}</div></div>
+  </div>`;
+
+        // Inputs
+        const vinHtml = d.vin
+          .map((v, i) => {
+            const rtl = v.relative_timelock;
+            const rtlHtml = rtl.enabled
+              ? `<span style="color:var(--yellow);font-size:0.75rem">⏱ ${tip("reltimelock", "Relative lock")}: ${rtl.value} ${rtl.type}</span>`
+              : "";
+            return `<div class="io-entry">
+      <div class="io-entry-header">
+        <strong>Input #${i}</strong> ${scriptBadge(v.script_type)}
+        ${rtlHtml}
+      </div>
+      <div style="font-size:0.8rem;color:var(--muted)">Spending: ${v.address || "unknown"}</div>
+      <div class="io-entry-sats">${fmtSats(v.prevout.value_sats)}</div>
+      <div style="margin-top:8px;font-size:0.75rem;color:var(--muted)">
+        seq: 0x${v.sequence.toString(16).padStart(8, "0")} &nbsp;|&nbsp;
+        witness items: ${v.witness.length}
+        ${v.witness.length > 0 ? '<button class="toggle-tech" onclick="toggleTech(\'vin-' + i + "-w')\">show witness ▾</button>" : ""}
+      </div>
+      ${v.witness.length > 0 ? `<div class="technical" id="vin-${i}-w">${v.witness.map((w, j) => `[${j}] ${w || "(empty)"}`).join("\n")}</div>` : ""}
+      <button class="toggle-tech" onclick="toggleTech('vin-${i}-tech')" style="margin-top:6px">show script ▾</button>
+      <div class="technical" id="vin-${i}-tech">scriptSig ASM:\n${v.script_asm || "(empty)"}\n\nscriptPubKey (prevout):\n${v.prevout.script_pubkey_hex}</div>
+    </div>`;
+          })
+          .join("");
+
+        // Outputs
+        const voutHtml = d.vout
+          .map((v, i) => {
+            let extra = "";
+            if (v.script_type === "op_return") {
+              extra = `<div style="margin-top:6px;font-size:0.78rem">
+        <span style="color:var(--muted)">Data: </span><span class="mono">${v.op_return_data_utf8 || v.op_return_data_hex || "(empty)"}</span>
+        ${v.op_return_protocol !== "unknown" ? `<span class="badge badge-blue" style="margin-left:6px">${v.op_return_protocol}</span>` : ""}
+      </div>`;
+            }
+            return `<div class="io-entry">
+      <div class="io-entry-header"><strong>Output #${v.n}</strong> ${scriptBadge(v.script_type)}</div>
+      ${v.address ? `<div style="font-size:0.8rem;color:var(--muted)">${v.address}</div>` : ""}
+      <div class="io-entry-sats">${v.script_type === "op_return" ? "—" : fmtSats(v.value_sats)}</div>
+      ${extra}
+      <button class="toggle-tech" onclick="toggleTech('vout-${i}-tech')" style="margin-top:6px">show script ▾</button>
+      <div class="technical" id="vout-${i}-tech">scriptPubKey ASM:\n${v.script_asm}</div>
+    </div>`;
+          })
+          .join("");
+
+        return `
+    ${warnings}
+    ${statsHtml}
+    ${flowHtml}
+    ${savingsHtml}
+    <div class="vin-vout">
+      <div><div class="section-title">📥 Inputs (${d.vin.length})</div>${vinHtml}</div>
+      <div><div class="section-title">📤 Outputs (${d.vout.length})</div>${voutHtml}</div>
+    </div>`;
+      }
+
+      // ── Analyze block files ────────────────────────────────────────────────────
+      async function analyzeBlockFiles() {
+        const blk = document.getElementById("blk-file").files[0];
+        const rev = document.getElementById("rev-file").files[0];
+        const xor = document.getElementById("xor-file").files[0];
+        if (!blk || !rev || !xor)
+          return alert(
+            "Please select all three files: blk*.dat, rev*.dat, xor.dat",
+          );
+
+        document.getElementById("block-spinner").style.display = "inline-block";
+        document.getElementById("block-result").innerHTML = "";
+
+        // Upload files, then call analyze-block
+        try {
+          const form = new FormData();
+          form.append("blk", blk);
+          form.append("rev", rev);
+          form.append("xor", xor);
+          // We send paths via a simple approach: upload then analyze
+          const resp = await fetch("/api/analyze-block-upload", {
+            method: "POST",
+            body: form,
+          });
+          const data = await resp.json();
+          document.getElementById("block-result").innerHTML = renderBlock(data);
+        } catch (e) {
+          document.getElementById("block-result").innerHTML =
+            `<div class="error-card"><strong>Error:</strong> ${e.message}<br><small>Make sure files are uploaded to the server.</small></div>`;
+        }
+        document.getElementById("block-spinner").style.display = "none";
+      }
+
+      function renderBlock(data) {
+        if (!data.ok) {
+          return `<div class="error-card"><strong>Error [${data.error?.code}]:</strong> ${data.error?.message}</div>`;
+        }
+        const blocks = data.blocks || [];
+        if (blocks.length === 0)
+          return '<div class="card">No blocks found in file.</div>';
+
+        return blocks
+          .map((b, i) => {
+            if (!b.ok)
+              return `<div class="error-card">Block ${i}: Error [${b.error?.code}] ${b.error?.message}</div>`;
+            const h = b.block_header;
+            const stats = b.block_stats;
+            return `<div class="card">
+      <div class="section-title">Block #${b.coinbase?.bip34_height ?? i} <span class="badge badge-green">✓ Merkle valid</span></div>
+      <div class="mono" style="color:var(--muted);font-size:0.75rem;margin-bottom:12px">${h.block_hash}</div>
+      <div class="grid3" style="margin-bottom:16px">
+        <div class="stat"><div class="stat-label">Transactions</div><div class="stat-value">${b.tx_count}</div></div>
+        <div class="stat"><div class="stat-label">Total fees</div><div class="stat-value" style="color:var(--red)">${fmtSats(stats.total_fees_sats)}</div></div>
+        <div class="stat"><div class="stat-label">Avg fee rate</div><div class="stat-value">${stats.avg_fee_rate_sat_vb} sat/vB</div></div>
+        <div class="stat"><div class="stat-label">Total weight</div><div class="stat-value">${stats.total_weight}</div><div class="stat-sub">WU</div></div>
+        <div class="stat"><div class="stat-label">Timestamp</div><div class="stat-value" style="font-size:0.85rem">${new Date(h.timestamp * 1000).toISOString().replace("T", " ").slice(0, 19)}</div></div>
+        <div class="stat"><div class="stat-label">Coinbase height</div><div class="stat-value">${b.coinbase?.bip34_height ?? "n/a"}</div></div>
+      </div>
+      <div class="section-title" style="margin-bottom:8px">Script type breakdown</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+        ${Object.entries(stats.script_type_summary)
+          .map(
+            ([t, n]) =>
+              `${scriptBadge(t)} <span style="font-size:0.8rem">${n}</span>`,
+          )
+          .join(" &nbsp; ")}
+      </div>
+      <div class="section-title" style="margin-bottom:8px">Transactions</div>
+      <div class="block-list">
+        ${b.transactions
+          .slice(0, 50)
+          .map((tx, ti) => {
+            if (!tx.ok)
+              return `<div class="block-item"><span class="badge badge-red">Error</span></div>`;
+            return `<div class="block-item" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="mono" style="font-size:0.72rem">${tx.txid?.slice(0, 16)}…</span>
+              <div style="display:flex;gap:6px;align-items:center">
+                ${scriptBadge(tx.segwit ? "p2wpkh" : "p2pkh").replace(tx.segwit ? "P2WPKH" : "P2PKH", tx.segwit ? "SegWit" : "Legacy")}
+                <span style="font-size:0.8rem;color:var(--red)">${fmtSats(tx.fee_sats)}</span>
+                <span style="font-size:0.78rem;color:var(--muted)">${tx.fee_rate_sat_vb} sat/vB</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:none;padding:0 0 8px 0">${renderTx(tx)}</div>`;
+          })
+          .join("")}
+        ${b.transactions.length > 50 ? `<div class="card" style="text-align:center;color:var(--muted)">… and ${b.transactions.length - 50} more transactions</div>` : ""}
+      </div>
+    </div>`;
+          })
+          .join("");
+      }
+    </script>
+  </body>
+</html>
