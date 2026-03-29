@@ -2267,25 +2267,40 @@
         renderTable();
       }
 
-      /* ── Render Table (all rows, no virtual scroll) ────────────────── */
+      /* ── Render Table (virtual scroll) ─────────────────────────────── */
       function renderTable() {
         const rc = document.getElementById("rows-container");
         const spacerTop = document.getElementById("spacer-top");
         const spacerBot = document.getElementById("spacer-bot");
-        spacerTop.style.height = "0px";
-        spacerBot.style.height = "0px";
-
         const total = sortedTxs.length;
+
         if (total === 0) {
+          spacerTop.style.height = "0px";
+          spacerBot.style.height = "0px";
           rc.innerHTML =
             '<div class="no-results">No transactions match the current filters.</div>';
           return;
         }
 
+        const containerHeight = 600;
+        const visibleCount =
+          Math.ceil(containerHeight / ROW_HEIGHT) + SCROLL_BUFFER * 2;
+        const startIndex = Math.max(
+          0,
+          Math.floor(scrollTop / ROW_HEIGHT) - SCROLL_BUFFER,
+        );
+        const endIndex = Math.min(total, startIndex + visibleCount);
+
+        if (startIndex === _lastStartIndex) return;
+        _lastStartIndex = startIndex;
+
+        spacerTop.style.height = `${startIndex * ROW_HEIGHT}px`;
+        spacerBot.style.height = `${(total - endIndex) * ROW_HEIGHT}px`;
+
         const fragment = document.createDocumentFragment();
         rc.innerHTML = "";
 
-        for (let i = 0; i < total; i++) {
+        for (let i = startIndex; i < endIndex; i++) {
           const tx = sortedTxs[i];
           const isExpanded = tx.txid === expandedTxid;
           const isSelected = i === selectedIndex;
@@ -2747,6 +2762,11 @@
           updateHeuristicBadge();
           applyFilters();
         });
+
+      document.getElementById("scroll-container").addEventListener("scroll", function () {
+        scrollTop = this.scrollTop;
+        renderTable();
+      });
 
       document
         .getElementById("modal-close")
